@@ -1,0 +1,39 @@
+name: Check PyCaret 4.0
+
+on:
+  schedule:
+    - cron: "*/90 * * * *"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check PyPI for PyCaret 4.0.0
+        run: |
+          VERSION=$(python - <<'PY'
+          import json
+          import urllib.request
+
+          url = "https://pypi.org/pypi/pycaret/json"
+
+          with urllib.request.urlopen(url) as response:
+              data = json.load(response)
+
+          versions = data["releases"]
+
+          print("4.0.0" if "4.0.0" in versions else "")
+          PY
+          )
+
+          if [ "$VERSION" = "4.0.0" ]; then
+            curl \
+              -H "Title: 🚀 PyCaret 4.0.0 is LIVE!" \
+              -H "Priority: urgent" \
+              -H "Tags: rocket,partying_face" \
+              -d "PyCaret 4.0.0 has been released on PyPI!" \
+              "https://ntfy.sh/pycaret40-x7k92m4q"
+          else
+            echo "PyCaret 4.0.0 is not released yet."
+          fi
