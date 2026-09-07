@@ -2,7 +2,7 @@ name: Check PyCaret 4.0
 
 on:
   schedule:
-    - cron: "*/90 * * * *"
+    - cron: "52 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,7 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check PyPI for PyCaret 4.0.0
+      - name: Check PyPI
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
           VERSION=$(python - <<'PY'
           import json
@@ -21,19 +23,17 @@ jobs:
           with urllib.request.urlopen(url) as response:
               data = json.load(response)
 
-          versions = data["releases"]
-
-          print("4.0.0" if "4.0.0" in versions else "")
+          print("yes" if "4.0.0" in data["releases"] else "no")
           PY
           )
 
-          if [ "$VERSION" = "4.0.0" ]; then
+          if [ "$VERSION" = "yes" ]; then
             curl \
               -H "Title: 🚀 PyCaret 4.0.0 is LIVE!" \
               -H "Priority: urgent" \
-              -H "Tags: rocket,partying_face" \
-              -d "PyCaret 4.0.0 has been released on PyPI!" \
-              "https://ntfy.sh/pycaret40-x7k92m4q"
+              -H "Tags: rocket" \
+              -d "PyCaret 4.0.0 has been released!" \
+              "https://ntfy.sh/$NTFY_TOPIC"
           else
             echo "PyCaret 4.0.0 is not released yet."
           fi
