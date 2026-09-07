@@ -1,16 +1,20 @@
-name: Check PyCaret 4.0
+name: Monitor PyCaret 4.0
 
 on:
   schedule:
-    - cron: "52 * * * *"
+    # Every day at 12:00 UTC
+    # = 8:00 AM Quebec time during daylight saving time
+    - cron: "0 12 * * *"
+
+  # Allows you to run the workflow manually
   workflow_dispatch:
 
 jobs:
-  check:
+  check-pycaret:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check PyPI
+      - name: Check PyPI for PyCaret 4.0.0
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
@@ -23,17 +27,29 @@ jobs:
           with urllib.request.urlopen(url) as response:
               data = json.load(response)
 
-          print("yes" if "4.0.0" in data["releases"] else "no")
+          if "4.0.0" in data["releases"]:
+              print("released")
+          else:
+              print("not_released")
           PY
           )
 
-          if [ "$VERSION" = "yes" ]; then
+          if [ "$VERSION" = "released" ]; then
+
             curl \
               -H "Title: 🚀 PyCaret 4.0.0 is LIVE!" \
               -H "Priority: urgent" \
-              -H "Tags: rocket" \
-              -d "PyCaret 4.0.0 has been released!" \
+              -H "Tags: rocket,partying_face" \
+              -d "PyCaret 4.0.0 has officially been released on PyPI!" \
               "https://ntfy.sh/$NTFY_TOPIC"
+
           else
-            echo "PyCaret 4.0.0 is not released yet."
+
+            curl \
+              -H "Title: 📦 PyCaret 4.0 update" \
+              -H "Priority: default" \
+              -H "Tags: package" \
+              -d "PyCaret 4.0.0 has NOT been released yet. I'll check again tomorrow." \
+              "https://ntfy.sh/$NTFY_TOPIC"
+
           fi
