@@ -33,7 +33,7 @@ jobs:
               -H "Priority: urgent" \
               -H "Tags: rocket,partying_face" \
               -d "PyCaret 4.0.0 has been released on PyPI!" \
-              "https://ntfy.sh/pycaret"
+              "https://ntfy.sh/pycaret40-x7k92m4q"
           else
             echo "PyCaret 4.0.0 is not released yet."
           fi
